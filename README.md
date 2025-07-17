@@ -10,19 +10,22 @@ Welcome to my central cybersecurity repository — a curated collection of proje
 
 This repo serves as a living archive of practical work, not just theory. It's structured to reflect my evolving skill set, tools I’ve used, and techniques I’ve practiced along the way.
 
----
-
 ## 📂 Repository Contents
+---
 
 | Folder / File               | Description |
 |----------------------------|-------------|
-| `notes/`                   | Markdown notes from TryHackMe, Google Cybersecurity Certificate, and other studies |
-| `python-scripts/`          | Scripts for automation, recon, log parsing, or experimentation |
-| `pentesting-journal.md`    | Lab findings, walkthroughs, and personal reflections from hands-on practice |
-| `bugbounty-diary.md`       | Public-safe writeups, recon processes, and notes from live targets |
-| `malware-analysis/`        | Early steps toward dynamic/static malware analysis (sandboxing, obfuscation, etc.) |
-| `wazuh-velociraptor/`      | Configurations, notes, and use cases from security tool practice |
-| `roadmap.md`               | My personal roadmap, goals, and skill-tracking metrics |
+| `blue-portfolio/`          | Defensive projects: log analysis, alerting, detection logic, threat hunting, SOC labs |
+| `red-portfolio/`           | Offensive projects: recon, exploitation, payload crafting, post-exploitation exercises |
+| `ctf-writeups/`            | Capture The Flag writeups (both red & blue), sorted by platform or challenge type |
+| `coursework/`              | Notes, exercises, and assignments from Google Cert, TryHackMe, Codecademy, etc. |
+| `bug-hunt-records/`        | Ethical recon, bounty prep notes, target analysis, and safe writeups |
+| `malware-analysis/`        | Sandbox testing, static/dynamic analysis, unpacking and reverse engineering practice |
+| `python-scripts/`          | Custom Python scripts used across various cyber tasks (defensive & offensive) |
+| `programming/`             | Broader programming experiments (logic building, syntax practice, tooling ideas) |
+| `ai-experiments/`          | AI concepts, prototype tools, or exploration into AI x cybersecurity fusion |
+| `notes/`                   | General study notes and journaling (could include Obsidian-style vault entries) |
+| `roadmap.md`               | Your ongoing cybersecurity roadmap and milestone tracker |
 
 ---
 
@@ -35,6 +38,20 @@ This repo serves as a living archive of practical work, not just theory. It's st
 - Malware Reverse Engineering (in progress)
 
 ---
+
+
+## 🔜 Next Skill Goals  
+Immediate priorities as I shift from blue team fundamentals into offensive security practice:
+
+- Web App Pentesting Techniques (XSS, SQLi, IDOR, SSRF, etc.)  
+- Recon & Enumeration (active/passive bug bounty recon methods)  
+- Bash & Python Scripting for Exploitation  
+- Brute Force, Fuzzing & Auth Bypass Methods  
+- Manual Testing Methodology (beyond automated scanners)  
+- Vulnerability Reporting & Writeup Practice  
+- Responsible Bug Hunting Ethics
+"""
+
 
 ## 🧰 Tools I Work With
 
