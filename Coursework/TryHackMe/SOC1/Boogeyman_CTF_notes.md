@@ -1,5 +1,7 @@
 <DOCUMENT filename="Boogeyman_1_CTF_Notes_CLEANED.md">
-# ⚠️ Ethical Use Notice
+⚠️ Ethical Use Notice ⚠️
+
+  ---
 These notes are based on a **lab-based simulation** from TryHackMe's 'Boogeyman 1' CTF challenge.
 All domains, tools, and data are used purely for **educational and ethical hacking purposes**.
 Real-world exploitation, unauthorized scanning, or any form of illegal activity is strictly condemned.
