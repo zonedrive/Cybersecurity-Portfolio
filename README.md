@@ -1,6 +1,6 @@
 # 🛡️ Cybersecurity Professional Portfolio
 
-Welcome to my central cybersecurity repository — a curated collection of projects, notes, scripts, and experiments as I progress through my journey from SOC1 foundations to Offensive Security and Malware Analysis.
+Welcome to my central cybersecurity repository — a curated collection of projects, notes, scripts, and experiments as I progress through my journey from SOC1 foundations to Offensive Security.
 
 ---
 
