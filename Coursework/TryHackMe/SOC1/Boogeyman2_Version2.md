@@ -1,7 +1,11 @@
-# Boogeyman 2 =={ START }==
---------------
+# Boogeyman 2 
 
-**---SOLO---**
+
+**Start of CTF**
+
+**==BEGIN==**
+
+## **(Independent Analysis)**
 
 This is a TryHackMe Lab CTF exercise.  
 *Note: All content is fictional and for educational purposes only.*
@@ -53,11 +57,11 @@ vol -f WKSTN-2961.raw windows.netscan.NetScan
 
 *Note: For questions 5 and 10, the answer was autocorrected from `.png` to `.exe`. Verified using the `filescan` plugin and extraction steps below.*
 
-**---SOLO---**
+**(Independent Analysis End)**
 
 ---
 
-**---RESEARCH_START---**
+## **(Research started)**
 
 Used:
 ```shell
@@ -97,11 +101,11 @@ C2 IP & port:
 Malicious .doc attachment email path:
 - `\Users\[REDACTED_USER]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc`
 
-**---RESEARCH_END---**
+**(Research Ended)**
 
 ---
 
-**---SOLO AGAIN---**
+## **Independent Analysis Redux**
 
 PID: **6216**  
 Confirmed as correct.  
@@ -114,11 +118,14 @@ C2 IP Address & port: `128.199.95.189:8080`
 Malicious .doc attachment path:  
 `\Users\[REDACTED_USER]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc`
 
----
 
 Last question required more research regarding scheduled processes.
 
-**---RESEARCH START---**
+**(Independent Analysis Ends)**
+
+---
+
+## **Rev up those fryers because we're (Researching again)**
 
 - Searched for "schedule" in file paths:
   ```shell
@@ -145,7 +152,7 @@ Persistence established via Task Scheduler, storing a listener in:
   - `HKCU:\Software\Microsoft\Windows\CurrentVersion\debug`
   - Updater scheduled daily at 09:00.
 
-**--END RESEARCH--**
+**(End Research)**
 
 ==FINISH==
 
