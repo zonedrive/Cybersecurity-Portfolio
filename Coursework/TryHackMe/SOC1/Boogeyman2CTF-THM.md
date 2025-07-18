@@ -1,7 +1,21 @@
 Boogeyman 2
 --------------
 
-**Start of Investigation**
+## TL;DR Summary
+
+- **Initial Vector**: Phishing email with .doc macro payload
+- **Stage 1**: Malicious macro calls Stage 2 from external URL
+- **Stage 2**: JS script (`update.js`) executed via `wscript.exe`
+- **Stage 3**: Downloader `Updater.exe` communicates with C2 (port 8080)
+- **Persistence**: Established using `schtasks` + encoded PowerShell
+- **Tools Used**: olevba, Volatility3 (pstree, netscan, dumpfiles), strings
+- **Key Skills Demonstrated**: Memory forensics, malware staging, live artifact triage, persistence detection
+
+
+---
+
+# **Full Investigation**
+
 
 ## Analysis 1
 
@@ -97,7 +111,7 @@ C2 IP Address and port: ```[REDACTED]```
 
 full filepath of the malicious .doc file email attachment:
 
-```\Users\maxine.beck\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc```
+```\Users\[REDACTED]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc```
 
 last question might need a bit of research again.. i forget the keywords for finding scheduled processes..
 
@@ -125,5 +139,13 @@ Full Command:
 ```"schtasks /Create /F /SC DAILY /ST 09:00 /TN Updater /TR 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NonI -W hidden -c \"IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String((gp HKCU:\Software\Microsoft\Windows\CurrentVersion debug).debug)))"``` was the answer.
 
 
+
+
 **Finished CTF**⠀⠀⠀⠀⠀⠀⠀⠀
 
+
+## Lessons Learned
+
+- Validated the importance of PID tracking across processes during staged malware execution.
+- Learned that doing my own investigation rather than guessing the answer is more important, and learning the process to finding that answer.
+- Reaffirmed that persistence often lives in plain sight (`schtasks`, registry) but requires familiarity with Windows internals.
