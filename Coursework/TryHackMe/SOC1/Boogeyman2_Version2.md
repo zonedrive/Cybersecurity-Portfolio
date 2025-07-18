@@ -1,160 +1,174 @@
-# Boogeyman 2 
+# Boogeyman 2 — Memory Forensics CTF Writeup (Portfolio Edition)
 
+**Note:** This is a TryHackMe Lab CTF.
 
-**Start of CTF**
+URL: [https://tryhackme.com/room/boogeyman2]
 
-**==BEGIN==**
+---
 
-## **(Independent Analysis)**
+## == START OF INVESTIGATION ==
 
-This is a TryHackMe Lab CTF exercise.  
-*Note: All content is fictional and for educational purposes only.*
+### Independent Phase: Initial Recon & Execution Flow
 
-- **Phishing email sender:** `[REDACTED_EMAIL]`
-- **Victim's email:** `[REDACTED_EMAIL]`
+**Scenario:** A phishing campaign led to a staged malware infection. My goal was to trace the execution, identify the payload stages, extract malicious binaries, and uncover C2 infrastructure.
 
-**Malicious file attachment:**  
-- Original name: `Resume_WesleyTaylor.doc`  
-- Renamed as: `Malware.doc`  
-- File hash: `52c4384a0b9e248b95804352ebec6c5b`
+* **Phishing Email From:** `[REDACTED_EMAIL]`
+* **Victim Email:** `[REDACTED_EMAIL]`
 
-The malware appears to operate in multiple stages; at least a stage 2 was identified.
+**Malicious Attachment**
 
-**Analysis steps:**
+* Filename: `Resume_WesleyTaylor.doc` (renamed to `Malware.doc`)
+* SHA256: `52c4384a0b9e248b95804352ebec6c5b`
 
-- Used the `olevba` tool for further inspection:  
-  ```shell
-  olevba Malware.doc
-  ```
-- Discovered stage 2 payload download URL:  
-  `https://files.boogeymanisback.lol/aa2a9c53cbb80416d3b47d85538d9971/update.png`
-- The Windows process executing the stage 2 payload: `wscript.exe`
-- Stage 2 payload path: `C:\ProgramData\update.js`
+Tool used:
 
-**Forensics (Volatility3):**
-
-Volatility3 commands used:
-```shell
-vol -f WKSTN-2961.raw <plugin>
-vol -f WKSTN-2961.raw -h
+```bash
+olevba Malware.doc
 ```
 
-Plugins of choice:
-- `windows.pstree.PsTree`
-- `windows.psscan.PsScan`
-- `windows.pslist.PsList`
-- `windows.strings.Strings`
+**Revealed Stage 2 Payload URL**:
 
-Initial attempts:
-```shell
+```
+https://files.boogeymanisback.lol/aa2a9c53cbb80416d3b47d85538d9971/update.png
+```
+
+> Notably, this is a disguised `.exe` file behind a `.png` extension.
+
+**Macro executed via:** `wscript.exe`
+**Stage 2 Payload Path:** `C:\ProgramData\update.js`
+
+---
+
+## Volatility 3 Forensic Analysis (Independent Phase)
+
+Memory image used: `WKSTN-2961.raw`
+
+### Plugins used:
+
+```bash
 vol -f WKSTN-2961.raw windows.pstree.PsTree
+vol -f WKSTN-2961.raw windows.psscan.PsScan
+vol -f WKSTN-2961.raw windows.pslist.PsList
+vol -f WKSTN-2961.raw windows.strings.Strings
+```
+
+### Key Findings:
+
+* PID of `wscript.exe`: **4260**
+* Parent process: `WINWORD.EXE` (PID: 1124)
+* `windows.strings.Strings` plugin wasn’t fruitful initially
+
+### Honest Note:
+
+> I originally answered question 10 by pasting the answer from question 5 and accidentally "autocorrected" `.png` to `.exe`. It turned out correct, but I wasn’t satisfied. So I paused and researched how to *properly* find the answer. That process is documented below.
+
+---
+
+## Research Phase: Digging Deeper
+
+```bash
+vol -f WKSTN-2961.raw windows.filescan | grep -i update
+```
+
+Found: `update[1].exe`
+
+Dumped the suspicious file:
+
+```bash
+vol -f WKSTN-2961.raw windows.dumpfiles --virtaddr 0xe58f8928f8b0
+```
+
+File verification and inspection:
+
+```bash
+file 'file.0xe58f8928f8b0...update[1].exe.dat'
+cat 'file.0xe58f8928f8b0...update[1].exe.dat'
+```
+
+Unfortunately, this didn't show useful content.
+So I pivoted to string searches:
+
+```bash
+strings WKSTN-2961.raw | grep boogeymanisback.lol
+```
+
+**Discovered:**
+
+```
+https://files.boogeymanisback.lol/aa2a9c53cbb80416d3b47d85538d9971/update.exe
+```
+
+---
+
+## 👁️ C2 and Persistence Discovery
+
+### C2 Discovery
+
+```bash
 vol -f WKSTN-2961.raw windows.netscan.NetScan
 ```
 
-- Stage 2 PID: **4260**
-- Parent process of `wscript.exe`: `WINWORD.EXE` (PID: 1124)
-- `windows.strings.Strings` plugin was not effective here
+* **C2 IP/Port:** `128.199.95.189:8080`
+* **Malicious Binary:** `updater.exe` (PID: 6216)
+* **Path:** `C:\Windows\Tasks\Updater.exe`
 
-*Note: For questions 5 and 10, the answer was autocorrected from `.png` to `.exe`. Verified using the `filescan` plugin and extraction steps below.*
+### Additional IOC
 
-**(Independent Analysis End)**
+```
+\Users\[REDACTED_USER]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc
+```
 
 ---
 
-## **(Research started)**
+## Persistence Mechanism (Researched)
 
-Used:
-```shell
-vol -f WKSTN-2961.raw windows.filescan | grep -i update
+Tried various searches:
+
+```bash
+vol -f WKSTN-2961.raw windows.filescan | grep -i "schedule"
 ```
-- Found: `update[1].exe`
 
-Dumped the file:
-```shell
-vol -f WKSTN-2961.raw windows.dumpfiles --virtaddr 0xe58f8928f8b0
+Identified relevant Windows Task Scheduler path:
+
 ```
-- Checked filetype and contents:
-  ```
-  file 'file.0xe58f8928f8b0.0xe58f838dd360.DataSectionObject.update[1].exe.dat'
-  cat 'file.0xe58f8928f8b0.0xe58f838dd360.DataSectionObject.update[1].exe.dat'
-  ```
-- No major findings at this stage
-
-Further research:
-```shell
-strings WKSTN-2961.raw | grep boogeymanisback.lol
+\Windows\System32\winevt\Logs\Microsoft-Windows-TaskScheduler
 ```
-- Located the update.exe webserver URL:  
-  `https://files.boogeymanisback.lol/aa2a9c53cbb80416d3b47d85538d9971/update.exe`
 
-Used `netscan` plugin for C2 clues:
-- The threat actor favors port **8080**.
-- PID of malicious process: **6216**
-- Confirmed: `updater.exe` is the malicious process
+Discovered event IDs 106 (task creation) and 140 (task update) might help, but no plugin found to extract them directly.
 
-Malicious file path:
-- `C:\Windows\Tasks\Updater.exe`
+Eventually:
 
-C2 IP & port:
-- `128.199.95.189:8080`
-
-Malicious .doc attachment email path:
-- `\Users\[REDACTED_USER]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc`
-
-**(Research Ended)**
-
----
-
-## **Independent Analysis Redux**
-
-PID: **6216**  
-Confirmed as correct.  
-`updater.exe` is the malicious process.
-
-Full file path: `C:\Windows\Tasks\Updater.exe`
-
-C2 IP Address & port: `128.199.95.189:8080`
-
-Malicious .doc attachment path:  
-`\Users\[REDACTED_USER]\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc`
-
-
-Last question required more research regarding scheduled processes.
-
-**(Independent Analysis Ends)**
-
----
-
-## **Rev up those fryers because we're (Researching again)**
-
-- Searched for "schedule" in file paths:
-  ```shell
-  vol -f WKSTN-2961.raw windows.filescan | grep -i "schedule"
-  ```
-- Windows uses the **Task Scheduler**:
-  - Path: `\Windows\System32\winevt\Logs\Microsoft-Windows-TaskScheduler`
-
-Event log IDs 106 (task creation) and 140 (update) are potentially relevant.
-
-No direct plugin for event IDs found.
-
-Walkthrough research:
-```shell
+```bash
 strings WKSTN-2961.raw | grep schtasks
 ```
-- Found the persistence mechanism:
 
-**Full Command:**
-```shell
-schtasks /Create /F /SC DAILY /ST 09:00 /TN Updater /TR "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NonI -W hidden -c \"IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String((gp HKCU:\Software\Microsoft\Windows\CurrentVersion debug).debug)))\""
+**Found Persistence Mechanism:**
+
+```powershell
+schtasks /Create /F /SC DAILY /ST 09:00 /TN Updater /TR "powershell.exe -NonI -W hidden -c 'IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String((gp HKCU:\Software\Microsoft\Windows\CurrentVersion debug).debug)))'"
 ```
-Persistence established via Task Scheduler, storing a listener in:
-  - `HKCU:\Software\Microsoft\Windows\CurrentVersion\debug`
-  - Updater scheduled daily at 09:00.
 
-**(End Research)**
+---
 
-==FINISH==
+## == END OF INVESTIGATION ==
+
+```
+C:\Windows\Tasks\Updater.exe
+HKCU:\Software\Microsoft\Windows\CurrentVersion\debug
+```
+
+---
+
+## Lessons Learned
+
+* **Validate Guesses:** Accidental correctness isn’t understanding. I corrected myself by seeking the right tools.
+* **Volatility Plugin Depth:** `filescan` and `dumpfiles` offer strong binary hunting capability.
+* **`.strings` Can Save the Day:** Sometimes simple string searches yield faster results than parsing plugin outputs.
+* **C2 Hunting:** Recurring ports and filenames (like `updater.exe` and port `8080`) can signal threat actor habits.
+* **Persistence:** Attackers love to bury payloads in scheduled tasks and registry keys. Check both.
+* **Walkthroughs as Compass, Not Crutch:** When used to guide your own execution, they strengthen—not weaken—your learning.
+
+---
 
 ```
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⣔⠒⠀⠉⠉⠢⡀⠀⠀⠀⠀⠀⠀⠀
