@@ -149,3 +149,16 @@ Full Command:
 - Validated the importance of PID tracking across processes during staged malware execution.
 - Learned that doing my own investigation rather than guessing the answer is more important, and learning the process to finding that answer.
 - Reaffirmed that persistence often lives in plain sight (`schtasks`, registry) but requires familiarity with Windows internals.
+
+
+## IOCs
+
+| Type         | Value                                                                 |
+|--------------|-----------------------------------------------------------------------|
+| SHA256 Hash  | 52c4384a0b9e248b95804352ebec6c5b                                      |
+| C2 IP        | [REDACTED]                                                            |
+| URL (Stage 2) Defanged| hxxps[://]files[.]boogeymanisback[.]lol/[.][.][.]/update[.]png                     |
+| URL (Stage 3) Defanged| hxxps[://]files[.]boogeymanisback[.]lol/[.][.][.]/update[.]exe                       |
+| File Path    | C:\ProgramData\update.js                                              |
+| Scheduled Task | `Updater` - daily at 09:00                                          |
+
